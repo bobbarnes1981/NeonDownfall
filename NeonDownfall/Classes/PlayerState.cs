@@ -6,10 +6,12 @@
         WalkRight,
         RunRight,
         TurnRight,
+        JumpRight,
 
         StandLeft,
         WalkLeft,
         RunLeft,
         TurnLeft,
+        JumpLeft,
     }
 }
