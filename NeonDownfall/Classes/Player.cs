@@ -6,28 +6,75 @@ namespace NeonDownfall.Classes
 {
     class Player
     {
-        // use a collection so we can select the correct animation
-        Texture2D texture;
-
         Vector2 position;
+
+        Animation[] animations;
+        int[] speeds;
+
+        PlayerState currentState;
 
         public Player(GraphicsDevice graphicsDevice)
         {
+            currentState = PlayerState.StandRight;
+
             // 2*4 tiles (8*8)
             int width = 16;
             int height = 32;
 
-            position = new Vector2(0, 0);
+            position = new Vector2(16, 0);
 
             // just use plain colour for now
-            texture = new Texture2D(graphicsDevice, width, height);
-            Color[] playerColor = new Color[width * height];
-            for (int i = 0; i < playerColor.Length; i++)
+
+            animations = new Animation[4];
+            speeds = new int[4];
+
+            //standing
+            animations[(int)PlayerState.StandRight] = new Animation(
+                generateTextureArray(graphicsDevice, width, height, Color.Black, 2, 0, (byte)(0xFF / 2), 0),
+                1 / 2.0
+            );
+            speeds[(int)PlayerState.StandRight] = 0;
+
+            //right walk
+            animations[(int)PlayerState.WalkRight] = new Animation(
+                generateTextureArray(graphicsDevice, width, height, Color.Black, width, (byte)(0xFF / width), 0, 0),
+                0.25 / ((float)width)
+            );
+            speeds[(int)PlayerState.WalkRight] = 64;
+            
+            //right run
+            animations[(int)PlayerState.RunRight] = new Animation(
+                generateTextureArray(graphicsDevice, width, height, Color.Black, width, 0, 0, (byte)(0xFF / width)),
+                0.25 / ((float)width)
+            );
+            speeds[(int)PlayerState.RunRight] = 128;
+        }
+
+        private Texture2D[] generateTextureArray(GraphicsDevice graphicsDevice, int width, int height, Color color, int number, byte rStep, byte gStep, byte bStep)
+        {
+            Texture2D[] textures = new Texture2D[number];
+
+            for (int j = 0; j < number; j++)
             {
-                playerColor[i] = Color.White;
+                Texture2D texture = new Texture2D(graphicsDevice, width, height);
+                Color[] colors = new Color[width * height];
+
+                Color currentColor = new Color(
+                    color.R + (byte)(rStep * j),
+                    color.G + (byte)(gStep * j),
+                    color.B + (byte)(bStep * j),
+                    0xFF
+                );
+                for (int i = 0; i < colors.Length; i++)
+                {
+                    colors[i] = currentColor;
+                }
+                texture.SetData(colors);
+
+                textures[j] = texture;
             }
 
-            texture.SetData(playerColor);
+            return textures;
         }
 
         public void Update(double elapsedSeconds)
@@ -35,28 +82,57 @@ namespace NeonDownfall.Classes
             // TODO: allow key/pad mapping
             var state = Keyboard.GetState();
 
-            // TODO: animation based movements of player
-            //       on keypress should start step animation, if no keypress complete animation
-            //       on still keypress should start/continue run animation, if no keypress stop animation
+            // TODO: pixel perfect movement
 
-            int speedWalk = 100;
+            bool finished = animations[(int)currentState].Update(elapsedSeconds);
 
             Vector2 movement = new Vector2();
-            if (state.IsKeyDown(Keys.Up))
+
+            switch (currentState)
             {
-                movement.Y -= (float)(1 * (speedWalk * elapsedSeconds));
-            }
-            if (state.IsKeyDown(Keys.Down))
-            {
-                movement.Y += (float)(1 * (speedWalk * elapsedSeconds));
-            }
-            if (state.IsKeyDown(Keys.Left))
-            {
-                movement.X -= (float)(1 * (speedWalk * elapsedSeconds));
-            }
-            if (state.IsKeyDown(Keys.Right))
-            {
-                movement.X += (float)(1 * (speedWalk * elapsedSeconds));
+                case PlayerState.StandRight:
+
+                    if (state.IsKeyDown(Keys.Right))
+                    {
+                        if (state.IsKeyDown(Keys.LeftShift))
+                        {
+                            currentState = PlayerState.RunRight;
+                            animations[(int)currentState].Reset();
+                        }
+                        else
+                        {
+                            currentState = PlayerState.WalkRight;
+                            animations[(int)currentState].Reset();
+                        }
+
+                        movement.X += (float)(speeds[(int)currentState] * elapsedSeconds); // todo: should be correct distance
+                    }
+
+                    break;
+
+                case PlayerState.WalkRight:
+                    if (finished)
+                    {
+                        currentState = PlayerState.StandRight;
+                    }
+                    else
+                    {
+                        movement.X += (float)(speeds[(int)currentState] * elapsedSeconds); // todo: should be correct distance
+                    }
+
+                    break;
+
+                case PlayerState.RunRight:
+                    if (finished)
+                    {
+                        currentState = PlayerState.StandRight;
+                    }
+                    else
+                    {
+                        movement.X += (float)(speeds[(int)currentState] * elapsedSeconds); // todo: should be correct distance
+                    }
+
+                    break;
             }
 
             position += movement;
@@ -64,7 +140,7 @@ namespace NeonDownfall.Classes
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(texture, position, Color.White);
+            spriteBatch.Draw(animations[(int)currentState].GetFrame(), position, Color.White);
         }
     }
 }

@@ -82,6 +82,18 @@ namespace NeonDownfall
 
             // TODO: Add your drawing code here
             spriteBatch.Begin();
+            Texture2D t = new Texture2D(graphics.GraphicsDevice, 1, 1);
+            t.SetData(new Color[] { Color.DarkGray });
+            for (int y = 0; y < this.Window.ClientBounds.Height; y++)
+            {
+                for (int x = 0; x < this.Window.ClientBounds.Width; x++)
+                {
+                    if (y % 8 == 0 || x % 8 == 0)
+                    {
+                        spriteBatch.Draw(t, new Vector2(x, y), Color.White);
+                    }
+                }
+            }
             engine.Draw(spriteBatch);
             spriteBatch.End();
 
