@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework.Graphics;
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace NeonDownfall.Classes
 {
@@ -10,11 +11,21 @@ namespace NeonDownfall.Classes
         int currentFrame = 0;
 
         private Texture2D[] frames;
+        private Vector2[] movements;
 
-        public Animation(Texture2D[] frames, double speed)
+        public Animation(Texture2D[] frames, Vector2[] movements, double speed)
         {
             this.frames = frames;
+            this.movements = movements;
             this.speed = speed;
+        }
+
+        public bool End
+        {
+            get
+            {
+                return currentFrame == 0;
+            }
         }
 
         public bool Update(double elapsedSeconds)
@@ -29,9 +40,9 @@ namespace NeonDownfall.Classes
                 if (currentFrame >= frames.Length)
                 {
                     currentFrame = 0;
-
-                    return true;
                 }
+
+                return true;
             }
 
             return false;
@@ -40,6 +51,11 @@ namespace NeonDownfall.Classes
         public Texture2D GetFrame()
         {
             return frames[currentFrame];
+        }
+
+        public Vector2 GetMovement()
+        {
+            return movements[currentFrame];
         }
 
         public void Reset()

@@ -31,6 +31,11 @@ namespace NeonDownfall.Classes
             //standing
             animations[(int)PlayerState.StandRight] = new Animation(
                 generateTextureArray(graphicsDevice, width, height, Color.Black, 2, 0, (byte)(0xFF / 2), 0),
+                new Vector2[]
+                {
+                    new Vector2(),
+                    new Vector2()
+                },
                 1 / 2.0
             );
             speeds[(int)PlayerState.StandRight] = 0;
@@ -38,6 +43,25 @@ namespace NeonDownfall.Classes
             //right walk
             animations[(int)PlayerState.WalkRight] = new Animation(
                 generateTextureArray(graphicsDevice, width, height, Color.Black, width, (byte)(0xFF / width), 0, 0),
+                new Vector2[]
+                {
+                    new Vector2(1, 0),
+                    new Vector2(1, 0),
+                    new Vector2(1, 0),
+                    new Vector2(1, 0),
+                    new Vector2(1, 0),
+                    new Vector2(1, 0),
+                    new Vector2(1, 0),
+                    new Vector2(1, 0),
+                    new Vector2(1, 0),
+                    new Vector2(1, 0),
+                    new Vector2(1, 0),
+                    new Vector2(1, 0),
+                    new Vector2(1, 0),
+                    new Vector2(1, 0),
+                    new Vector2(1, 0),
+                    new Vector2(1, 0),
+                },
                 0.25 / ((float)width)
             );
             speeds[(int)PlayerState.WalkRight] = 64;
@@ -45,6 +69,25 @@ namespace NeonDownfall.Classes
             //right run
             animations[(int)PlayerState.RunRight] = new Animation(
                 generateTextureArray(graphicsDevice, width, height, Color.Black, width, 0, 0, (byte)(0xFF / width)),
+                new Vector2[]
+                {
+                    new Vector2(),
+                    new Vector2(),
+                    new Vector2(),
+                    new Vector2(),
+                    new Vector2(),
+                    new Vector2(),
+                    new Vector2(),
+                    new Vector2(),
+                    new Vector2(),
+                    new Vector2(),
+                    new Vector2(),
+                    new Vector2(),
+                    new Vector2(),
+                    new Vector2(),
+                    new Vector2(),
+                    new Vector2()
+                },
                 0.25 / ((float)width)
             );
             speeds[(int)PlayerState.RunRight] = 128;
@@ -84,9 +127,11 @@ namespace NeonDownfall.Classes
 
             // TODO: pixel perfect movement
 
-            bool finished = animations[(int)currentState].Update(elapsedSeconds);
-
             Vector2 movement = new Vector2();
+            if (animations[(int)currentState].Update(elapsedSeconds))
+            {
+                movement = animations[(int)currentState].GetMovement();
+            }
 
             switch (currentState)
             {
@@ -104,32 +149,28 @@ namespace NeonDownfall.Classes
                             currentState = PlayerState.WalkRight;
                             animations[(int)currentState].Reset();
                         }
-
-                        movement.X += (float)(speeds[(int)currentState] * elapsedSeconds); // todo: should be correct distance
                     }
 
                     break;
 
                 case PlayerState.WalkRight:
-                    if (finished)
+                    if (animations[(int)currentState].End)
                     {
                         currentState = PlayerState.StandRight;
                     }
                     else
                     {
-                        movement.X += (float)(speeds[(int)currentState] * elapsedSeconds); // todo: should be correct distance
                     }
 
                     break;
 
                 case PlayerState.RunRight:
-                    if (finished)
+                    if (animations[(int)currentState].End)
                     {
                         currentState = PlayerState.StandRight;
                     }
                     else
                     {
-                        movement.X += (float)(speeds[(int)currentState] * elapsedSeconds); // todo: should be correct distance
                     }
 
                     break;
