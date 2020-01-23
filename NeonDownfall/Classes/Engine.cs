@@ -12,14 +12,24 @@ namespace NeonDownfall.Classes
         int tileSize = 8;
 
         Player player;
-        Texture2D pixel;
+        Page page;
 
         public Engine(GraphicsDevice graphicsDevice)
         {
-            player = new Player(graphicsDevice);
+            player = new Player(graphicsDevice, new Vector2(32, 0));
 
-            pixel = new Texture2D(graphicsDevice, 1, 1);
-            pixel.SetData(new Color[] { Color.DarkGray });
+            // TODO: page designer (restrict to 16 pixels)
+            Rectangle[] objects = new Rectangle[]
+            {
+                new Rectangle(new Point(12, 0), new Point(4, 32)),
+                new Rectangle(new Point(96, 0), new Point(4, 32)),
+                new Rectangle(new Point(16, 32), new Point(48, 4)),
+                new Rectangle(new Point(80, 32), new Point(16, 4)),
+                new Rectangle(new Point(32, 96), new Point(64, 4)),
+            };
+            page = new Page(graphicsDevice, tilesX, tilesY, tileSize, Color.DarkGray, objects);
+
+            //page = new Page(graphicsDevice, tilesX, tilesY, tileSize, Color.DarkGray, new Rectangle[] { new Rectangle(new Point(0, 96), new Point(190, 4)) });
 
             // TODO: states for title/game/gameover
             // TODO: show title screen
@@ -28,22 +38,12 @@ namespace NeonDownfall.Classes
 
         public void Update(double elapsedSeconds)
         {
-            player.Update(elapsedSeconds);
+            player.Update(elapsedSeconds, page);
         }
 
         public void Draw(SpriteBatch spriteBatch)
         {
-
-            for (int y = 0; y < tilesY * tileSize; y++)
-            {
-                for (int x = 0; x < tilesX * tileSize; x++)
-                {
-                    if (y % 8 == 0 || x % 8 == 0)
-                    {
-                        spriteBatch.Draw(pixel, new Vector2(x, y), Color.White);
-                    }
-                }
-            }
+            page.Draw(spriteBatch);
 
             player.Draw(spriteBatch);
         }

@@ -1,157 +1,315 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using NeonDownfall.Enums;
 using System;
+using System.Collections.Generic;
 
 namespace NeonDownfall.Classes
 {
     class Player
     {
+        // 2*4 tiles (8*8)
+        int width = 16;
+        int height = 32;
+
         Vector2 position;
 
-        Animation[] animations;
-        int[] speeds;
+        Dictionary<PlayerDirection, Dictionary<PlayerState, Animation>> animations;
 
-        PlayerState currentState;
+        PlayerState state;
+        PlayerDirection direction;
 
-        public Player(GraphicsDevice graphicsDevice)
+        public Player(GraphicsDevice graphicsDevice, Vector2 position)
         {
-            currentState = PlayerState.StandRight;
+            state = PlayerState.Stand;
+            direction = PlayerDirection.Right;
 
-            // 2*4 tiles (8*8)
-            int width = 16;
-            int height = 32;
+            this.position = position;
+            createPlaceholderTextures(graphicsDevice);
+        }
 
-            position = new Vector2(16, 0);
-
+        private void createPlaceholderTextures(GraphicsDevice graphicsDevice)
+        {
             // just use plain colour for now
 
-            animations = new Animation[10];
-            speeds = new int[10];
+            animations = new Dictionary<PlayerDirection, Dictionary<PlayerState, Animation>>
+            {
+                { PlayerDirection.Left, new Dictionary<PlayerState, Animation>() },
+                { PlayerDirection.Right, new Dictionary<PlayerState, Animation>() },
+            };
 
             //standing
-            animations[(int)PlayerState.StandRight] = new Animation(
-                generateTextureArray(graphicsDevice, width, height, Color.Black, 2, 0, (byte)(0xFF / 2), 0, 15),
-                new Vector2[]
-                {
-                    new Vector2(),
-                    new Vector2()
-                },
-                1 / 2.0
+            animations[PlayerDirection.Right].Add(
+                PlayerState.Stand,
+                new Animation(
+                    generateTextureArray(graphicsDevice, width, height, Color.Black, 2, 0, (byte)(0xFF / 2), 0, 15),
+                    new Vector2[]
+                    {
+                        new Vector2(),
+                        new Vector2()
+                    },
+                    1 / 2.0
+                )
             );
-            speeds[(int)PlayerState.StandRight] = 0;
-            animations[(int)PlayerState.StandLeft] = new Animation(
-                generateTextureArray(graphicsDevice, width, height, Color.Black, 2, 0, (byte)(0xFF / 2), 0, 0),
-                new Vector2[]
-                {
-                    new Vector2(),
-                    new Vector2()
-                },
-                1 / 2.0
+            animations[PlayerDirection.Left].Add(
+                PlayerState.Stand,
+                new Animation(
+                    generateTextureArray(graphicsDevice, width, height, Color.Black, 2, 0, (byte)(0xFF / 2), 0, 0),
+                    new Vector2[]
+                    {
+                        new Vector2(),
+                        new Vector2()
+                    },
+                    1 / 2.0
+                )
             );
-            speeds[(int)PlayerState.StandLeft] = 0;
+
+            //fall
+            animations[PlayerDirection.Right].Add(
+                PlayerState.Fall,
+                new Animation(
+                    generateTextureArray(graphicsDevice, width, height, Color.Black, 2, (byte)(0xFF / 2), 0, (byte)(0xFF / 2), 15),
+                    new Vector2[]
+                    {
+                        new Vector2(0, 4),
+                        new Vector2(0, 4),
+                        new Vector2(0, 4),
+                        new Vector2(0, 4),
+                        new Vector2(0, 4),
+                        new Vector2(0, 4),
+                        new Vector2(0, 4),
+                        new Vector2(0, 4),
+                        new Vector2(0, 4),
+                        new Vector2(0, 4),
+                        new Vector2(0, 4),
+                        new Vector2(0, 4),
+                        new Vector2(0, 4),
+                        new Vector2(0, 4),
+                        new Vector2(0, 4),
+                        new Vector2(0, 4),
+                    },
+                    0.25 / 16.0
+                )
+            );
+            animations[PlayerDirection.Left].Add(
+                PlayerState.Fall,
+                new Animation(
+                    generateTextureArray(graphicsDevice, width, height, Color.Black, 2, (byte)(0xFF / 2), 0, (byte)(0xFF / 2), 0),
+                    new Vector2[]
+                    {
+                        new Vector2(0, 2),
+                        new Vector2(0, 2),
+                        new Vector2(0, 2),
+                        new Vector2(0, 2),
+                        new Vector2(0, 2),
+                        new Vector2(0, 2),
+                        new Vector2(0, 2),
+                        new Vector2(0, 2),
+                        new Vector2(0, 2),
+                        new Vector2(0, 2),
+                        new Vector2(0, 2),
+                        new Vector2(0, 2),
+                        new Vector2(0, 2),
+                        new Vector2(0, 2),
+                        new Vector2(0, 2),
+                        new Vector2(0, 2),
+                    },
+                    0.25 / 16.0
+                )
+            );
 
             //turn
-            animations[(int)PlayerState.TurnRight] = new Animation(
-                generateTextureArray(graphicsDevice, width, height, Color.Black, 4, (byte)(0xFF / 4), (byte)(0xFF / 4), 0, 15),
-                new Vector2[]
-                {
-                    new Vector2(),
-                    new Vector2(),
-                    new Vector2(),
-                    new Vector2()
-                },
-                1 / 2.0
+            animations[PlayerDirection.Right].Add(
+                PlayerState.Turn,
+                new Animation(
+                    generateTextureArray(graphicsDevice, width, height, Color.Yellow, 4, 0, 0, 0, 15),
+                    new Vector2[]
+                    {
+                        new Vector2(),
+                        new Vector2(),
+                        new Vector2(),
+                        new Vector2()
+                    },
+                    1 / 2.0
+                )
             );
-            speeds[(int)PlayerState.TurnRight] = 0;
-            animations[(int)PlayerState.TurnLeft] = new Animation(
-                generateTextureArray(graphicsDevice, width, height, Color.Black, 4, (byte)(0xFF / 4), (byte)(0xFF / 4), 0, 0),
-                new Vector2[]
-                {
-                    new Vector2(),
-                    new Vector2(),
-                    new Vector2(),
-                    new Vector2()
-                },
-                1 / 2.0
+            animations[PlayerDirection.Left].Add(
+                PlayerState.Turn,
+                new Animation(
+                    generateTextureArray(graphicsDevice, width, height, Color.Yellow, 4, 0, 0, 0, 0),
+                    new Vector2[]
+                    {
+                        new Vector2(),
+                        new Vector2(),
+                        new Vector2(),
+                        new Vector2()
+                    },
+                    1 / 2.0
+                )
             );
-            speeds[(int)PlayerState.TurnLeft] = 0;
 
             //walk
-            animations[(int)PlayerState.WalkRight] = new Animation(
-                generateTextureArray(graphicsDevice, width, height, Color.Black, width, (byte)(0xFF / width), 0, 0, 15),
-                new Vector2[]
-                {
-                    new Vector2(1, 0),
-                    new Vector2(1, 0),
-                    new Vector2(1, 0),
-                    new Vector2(1, 0),
-                    new Vector2(1, 0),
-                    new Vector2(1, 0),
-                    new Vector2(1, 0),
-                    new Vector2(1, 0),
-                    new Vector2(1, 0),
-                    new Vector2(1, 0),
-                    new Vector2(1, 0),
-                    new Vector2(1, 0),
-                    new Vector2(1, 0),
-                    new Vector2(1, 0),
-                    new Vector2(1, 0),
-                    new Vector2(1, 0),
-                },
-                0.25 / ((float)width)
+            animations[PlayerDirection.Right].Add(
+                PlayerState.Walk,
+                new Animation(
+                    generateTextureArray(graphicsDevice, width, height, Color.Black, width, (byte)(0xFF / width), 0, 0, 15),
+                    new Vector2[]
+                    {
+                        new Vector2(1, 0),
+                        new Vector2(1, 0),
+                        new Vector2(1, 0),
+                        new Vector2(1, 0),
+                        new Vector2(1, 0),
+                        new Vector2(1, 0),
+                        new Vector2(1, 0),
+                        new Vector2(1, 0),
+                        new Vector2(1, 0),
+                        new Vector2(1, 0),
+                        new Vector2(1, 0),
+                        new Vector2(1, 0),
+                        new Vector2(1, 0),
+                        new Vector2(1, 0),
+                        new Vector2(1, 0),
+                        new Vector2(1, 0),
+                    },
+                    0.25 / ((float)width)
+                )
             );
-            speeds[(int)PlayerState.WalkRight] = 64;
-            animations[(int)PlayerState.WalkLeft] = new Animation(
-                generateTextureArray(graphicsDevice, width, height, Color.Black, width, (byte)(0xFF / width), 0, 0, 0),
-                new Vector2[]
-                {
-                    new Vector2(-1, 0),
-                    new Vector2(-1, 0),
-                    new Vector2(-1, 0),
-                    new Vector2(-1, 0),
-                    new Vector2(-1, 0),
-                    new Vector2(-1, 0),
-                    new Vector2(-1, 0),
-                    new Vector2(-1, 0),
-                    new Vector2(-1, 0),
-                    new Vector2(-1, 0),
-                    new Vector2(-1, 0),
-                    new Vector2(-1, 0),
-                    new Vector2(-1, 0),
-                    new Vector2(-1, 0),
-                    new Vector2(-1, 0),
-                    new Vector2(-1, 0),
-                },
-                0.25 / ((float)width)
+            animations[PlayerDirection.Left].Add(
+                PlayerState.Walk,
+                new Animation(
+                    generateTextureArray(graphicsDevice, width, height, Color.Black, width, (byte)(0xFF / width), 0, 0, 0),
+                    new Vector2[]
+                    {
+                        new Vector2(-1, 0),
+                        new Vector2(-1, 0),
+                        new Vector2(-1, 0),
+                        new Vector2(-1, 0),
+                        new Vector2(-1, 0),
+                        new Vector2(-1, 0),
+                        new Vector2(-1, 0),
+                        new Vector2(-1, 0),
+                        new Vector2(-1, 0),
+                        new Vector2(-1, 0),
+                        new Vector2(-1, 0),
+                        new Vector2(-1, 0),
+                        new Vector2(-1, 0),
+                        new Vector2(-1, 0),
+                        new Vector2(-1, 0),
+                        new Vector2(-1, 0),
+                    },
+                    0.25 / ((float)width)
+                )
             );
-            speeds[(int)PlayerState.WalkLeft] = 64;
 
-            //right run
-            animations[(int)PlayerState.RunRight] = new Animation(
-                generateTextureArray(graphicsDevice, width, height, Color.Black, width, 0, 0, (byte)(0xFF / width), 15),
-                new Vector2[]
-                {
-                    new Vector2(2, 0),
-                    new Vector2(2, 0),
-                    new Vector2(2, 0),
-                    new Vector2(2, 0),
-                    new Vector2(2, 0),
-                    new Vector2(2, 0),
-                    new Vector2(2, 0),
-                    new Vector2(2, 0),
-                    new Vector2(2, 0),
-                    new Vector2(2, 0),
-                    new Vector2(2, 0),
-                    new Vector2(2, 0),
-                    new Vector2(2, 0),
-                    new Vector2(2, 0),
-                    new Vector2(2, 0),
-                    new Vector2(2, 0),
-                },
-                0.25 / ((float)width)
+            //run
+            animations[PlayerDirection.Right].Add(
+                PlayerState.Run,
+                new Animation(
+                    generateTextureArray(graphicsDevice, width, height, Color.Black, 16, 0, 0, (byte)(0xFF / width), 15),
+                    new Vector2[]
+                    {
+                        new Vector2(2, 0),
+                        new Vector2(2, 0),
+                        new Vector2(2, 0),
+                        new Vector2(2, 0),
+                        new Vector2(2, 0),
+                        new Vector2(2, 0),
+                        new Vector2(2, 0),
+                        new Vector2(2, 0),
+                        new Vector2(2, 0),
+                        new Vector2(2, 0),
+                        new Vector2(2, 0),
+                        new Vector2(2, 0),
+                        new Vector2(2, 0),
+                        new Vector2(2, 0),
+                        new Vector2(2, 0),
+                        new Vector2(2, 0),
+                    },
+                    0.25 / 16f
+                )
             );
-            speeds[(int)PlayerState.RunRight] = 128;
+            animations[PlayerDirection.Left].Add(
+                PlayerState.Run,
+                new Animation(
+                    generateTextureArray(graphicsDevice, width, height, Color.Black, 16, 0, 0, (byte)(0xFF / width), 0),
+                    new Vector2[]
+                {
+                    new Vector2(-2, 0),
+                    new Vector2(-2, 0),
+                    new Vector2(-2, 0),
+                    new Vector2(-2, 0),
+                    new Vector2(-2, 0),
+                    new Vector2(-2, 0),
+                    new Vector2(-2, 0),
+                    new Vector2(-2, 0),
+                    new Vector2(-2, 0),
+                    new Vector2(-2, 0),
+                    new Vector2(-2, 0),
+                    new Vector2(-2, 0),
+                    new Vector2(-2, 0),
+                    new Vector2(-2, 0),
+                    new Vector2(-2, 0),
+                    new Vector2(-2, 0),
+                },
+                    0.25 / 16f
+                )
+            );
+
+            //jump
+            animations[PlayerDirection.Right].Add(
+                PlayerState.Jump,
+                new Animation(
+                    generateTextureArray(graphicsDevice, width, height, Color.CornflowerBlue, 16, 0, 0, (byte)(0xFF / width), 15),
+                    new Vector2[]
+                    {
+                        new Vector2(2, 0),
+                        new Vector2(2, 0),
+                        new Vector2(2, 0),
+                        new Vector2(2, 0),
+                        new Vector2(2, 0),
+                        new Vector2(2, 0),
+                        new Vector2(2, 0),
+                        new Vector2(2, 0),
+                        new Vector2(2, 0),
+                        new Vector2(2, 0),
+                        new Vector2(2, 0),
+                        new Vector2(2, 0),
+                        new Vector2(2, 0),
+                        new Vector2(2, 0),
+                        new Vector2(2, 0),
+                        new Vector2(2, 0),
+                    },
+                    0.25 / 16f
+                )
+            );
+            animations[PlayerDirection.Left].Add(
+                PlayerState.Jump,
+                new Animation(
+                    generateTextureArray(graphicsDevice, width, height, Color.CornflowerBlue, 16, 0, 0, (byte)(0xFF / width), 0),
+                    new Vector2[]
+                    {
+                        new Vector2(-2, 0),
+                        new Vector2(-2, 0),
+                        new Vector2(-2, 0),
+                        new Vector2(-2, 0),
+                        new Vector2(-2, 0),
+                        new Vector2(-2, 0),
+                        new Vector2(-2, 0),
+                        new Vector2(-2, 0),
+                        new Vector2(-2, 0),
+                        new Vector2(-2, 0),
+                        new Vector2(-2, 0),
+                        new Vector2(-2, 0),
+                        new Vector2(-2, 0),
+                        new Vector2(-2, 0),
+                        new Vector2(-2, 0),
+                        new Vector2(-2, 0),
+                    },
+                    0.25 / 16f
+                )
+            );
         }
 
         private Texture2D[] generateTextureArray(GraphicsDevice graphicsDevice, int width, int height, Color color, int number, byte rStep, byte gStep, byte bStep, int line)
@@ -186,132 +344,195 @@ namespace NeonDownfall.Classes
             return textures;
         }
 
-        public void Update(double elapsedSeconds)
+        private void checkStand(KeyboardState kb)
         {
-            // TODO: allow key/pad mapping
-            var state = Keyboard.GetState();
-
-            // TODO: pixel perfect movement
-
-            Vector2 movement = new Vector2();
-            if (animations[(int)currentState].Update(elapsedSeconds))
+            switch (direction)
             {
-                movement = animations[(int)currentState].GetMovement();
-            }
+                case PlayerDirection.Left:
 
-            switch (currentState)
-            {
-                case PlayerState.StandRight:
-
-                    if (state.IsKeyDown(Keys.Right))
+                    if (kb.IsKeyDown(Keys.Left))
                     {
-                        if (state.IsKeyDown(Keys.LeftShift))
+                        if (kb.IsKeyDown(Keys.LeftShift))
                         {
-                            currentState = PlayerState.RunRight;
-                            animations[(int)currentState].Reset();
+                            state = PlayerState.Run;
+                            animations[direction][state].Reset();
                         }
                         else
                         {
-                            currentState = PlayerState.WalkRight;
-                            animations[(int)currentState].Reset();
+                            state = PlayerState.Walk;
+                            animations[direction][state].Reset();
                         }
                     }
-                    else if (state.IsKeyDown(Keys.Left))
+                    else if (kb.IsKeyDown(Keys.Right))
                     {
-                        currentState = PlayerState.TurnLeft;
-                        animations[(int)currentState].Reset();
+                        state = PlayerState.Turn;
+                        direction = PlayerDirection.Right;
+                        animations[direction][state].Reset();
+                    }
+                    else if (kb.IsKeyDown(Keys.Up))
+                    {
+                        state = PlayerState.Up;
+                        animations[direction][state].Reset();
+                    }
+                    else if (kb.IsKeyDown(Keys.Space))
+                    {
+                        state = PlayerState.Jump;
+                        animations[direction][state].Reset();
                     }
 
                     break;
 
-                    // TODO: combine with code for StandRight
-                case PlayerState.StandLeft:
+                case PlayerDirection.Right:
 
-                    if (state.IsKeyDown(Keys.Left))
+                    if (kb.IsKeyDown(Keys.Right))
                     {
-                        if (state.IsKeyDown(Keys.LeftShift))
+                        if (kb.IsKeyDown(Keys.LeftShift))
                         {
-                            currentState = PlayerState.RunLeft;
-                            animations[(int)currentState].Reset();
+                            state = PlayerState.Run;
+                            animations[direction][state].Reset();
                         }
                         else
                         {
-                            currentState = PlayerState.WalkLeft;
-                            animations[(int)currentState].Reset();
+                            state = PlayerState.Walk;
+                            animations[direction][state].Reset();
                         }
                     }
-                    else if (state.IsKeyDown(Keys.Right))
+                    else if (kb.IsKeyDown(Keys.Left))
                     {
-                        currentState = PlayerState.TurnRight;
-                        animations[(int)currentState].Reset();
+                        state = PlayerState.Turn;
+                        direction = PlayerDirection.Left;
+                        animations[direction][state].Reset();
                     }
-
-                    break;
-
-                case PlayerState.WalkRight:
-
-                    if (animations[(int)currentState].End)
+                    else if (kb.IsKeyDown(Keys.Up))
                     {
-                        currentState = PlayerState.StandRight;
+                        state = PlayerState.Up;
+                        animations[direction][state].Reset();
                     }
-                    else
+                    else if (kb.IsKeyDown(Keys.Space))
                     {
-                    }
-
-                    break;
-
-                case PlayerState.WalkLeft:
-
-                    if (animations[(int)currentState].End)
-                    {
-                        currentState = PlayerState.StandLeft;
-                    }
-                    else
-                    {
-                    }
-
-                    break;
-
-                case PlayerState.RunRight:
-
-                    if (animations[(int)currentState].End)
-                    {
-                        currentState = PlayerState.StandRight;
-                    }
-                    else
-                    {
-                    }
-
-                    break;
-
-                case PlayerState.TurnLeft:
-
-                    if (animations[(int)currentState].End)
-                    {
-                        currentState = PlayerState.StandLeft;
-                    }
-                    else
-                    {
-                    }
-
-                    break;
-
-                    // combine with above?
-                case PlayerState.TurnRight:
-
-                    if (animations[(int)currentState].End)
-                    {
-                        currentState = PlayerState.StandRight;
-                    }
-                    else
-                    {
+                        state = PlayerState.Jump;
+                        animations[direction][state].Reset();
                     }
 
                     break;
 
                 default:
 
-                    throw new Exception(string.Format("Unhandled state {0}", currentState));
+                    throw new Exception(string.Format("Unhandled direction {0}", direction));
+            }
+        }
+
+        public void checkWalk(KeyboardState kb)
+        {
+            if (animations[direction][state].End)
+            {
+                state = PlayerState.Stand;
+                animations[direction][state].Reset();
+            }
+            else
+            {
+            }
+        }
+
+        public void checkRun(KeyboardState kb)
+        {
+            if (animations[direction][state].End)
+            {
+                state = PlayerState.Stand;
+            }
+            else
+            {
+            }
+        }
+
+        public void checkTurn(KeyboardState kb)
+        {
+            if (animations[direction][state].End)
+            {
+                state = PlayerState.Stand;
+            }
+            else
+            {
+            }
+        }
+
+        public void checkFall(KeyboardState kb)
+        {
+            // nothing until detected collision with ground
+        }
+
+        public void checkJump(KeyboardState kb)
+        {
+            if (animations[direction][state].End)
+            {
+                state = PlayerState.Stand;
+            }
+            else
+            {
+            }
+        }
+
+        public void Update(double elapsedSeconds, Page page)
+        {
+            // TODO: allow key/pad mapping
+            var kb = Keyboard.GetState();
+
+            Vector2 movement = new Vector2();
+            if (animations[direction][state].Update(elapsedSeconds))
+            {
+                movement = animations[direction][state].GetMovement();
+            }
+
+            Vector2 newPosition = position + movement;
+            if (page.Collision(new Rectangle(newPosition.ToPoint(), new Point(width, height))))
+            {
+                movement = new Vector2();
+            }
+
+            if (state != PlayerState.Jump)
+            {
+                Vector2 gravityCheck = position + new Vector2(0, 1);
+                if (page.Collision(new Rectangle(gravityCheck.ToPoint(), new Point(width, height))))
+                {
+                    if (state == PlayerState.Fall)
+                    {
+                        state = PlayerState.Stand;
+                    }
+                }
+                else
+                {
+                    state = PlayerState.Fall;
+                }
+            }
+
+            switch (state)
+            {
+                case PlayerState.Stand:
+                    checkStand(kb);
+                    break;
+
+                case PlayerState.Walk:
+                    checkWalk(kb);
+                    break;
+
+                case PlayerState.Run:
+                    checkRun(kb);
+                    break;
+
+                case PlayerState.Turn:
+                    checkTurn(kb);
+                    break;
+
+                case PlayerState.Fall:
+                    checkFall(kb);
+                    break;
+
+                case PlayerState.Jump:
+                    checkJump(kb);
+                    break;
+
+                default:
+                    throw new Exception(string.Format("Unhandled state {0}", state));
             }
 
             position += movement;
@@ -319,7 +540,7 @@ namespace NeonDownfall.Classes
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            spriteBatch.Draw(animations[(int)currentState].GetFrame(), position, Color.White);
+            spriteBatch.Draw(animations[direction][state].GetFrame(), position, Color.White);
         }
     }
 }

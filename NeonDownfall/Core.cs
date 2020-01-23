@@ -18,6 +18,9 @@ namespace NeonDownfall
         public Core()
         {
             graphics = new GraphicsDeviceManager(this);
+            graphics.PreferredBackBufferWidth = 448;
+            graphics.PreferredBackBufferHeight = 320;
+            graphics.ApplyChanges();
             Content.RootDirectory = "Content";
         }
 
@@ -81,7 +84,7 @@ namespace NeonDownfall
             GraphicsDevice.Clear(Color.Black);
 
             // TODO: Add your drawing code here
-            spriteBatch.Begin();
+            spriteBatch.Begin(SpriteSortMode.Immediate, null, null, null, null, null, Matrix.CreateScale(2f));
             engine.Draw(spriteBatch);
             spriteBatch.End();
 
