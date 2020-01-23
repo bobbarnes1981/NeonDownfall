@@ -4,6 +4,12 @@
     {
         StandRight,
         WalkRight,
-        RunRight
+        RunRight,
+        TurnRight,
+
+        StandLeft,
+        WalkLeft,
+        RunLeft,
+        TurnLeft,
     }
 }

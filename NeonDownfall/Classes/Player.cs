@@ -25,12 +25,12 @@ namespace NeonDownfall.Classes
 
             // just use plain colour for now
 
-            animations = new Animation[4];
-            speeds = new int[4];
+            animations = new Animation[8];
+            speeds = new int[8];
 
             //standing
             animations[(int)PlayerState.StandRight] = new Animation(
-                generateTextureArray(graphicsDevice, width, height, Color.Black, 2, 0, (byte)(0xFF / 2), 0),
+                generateTextureArray(graphicsDevice, width, height, Color.Black, 2, 0, (byte)(0xFF / 2), 0, 15),
                 new Vector2[]
                 {
                     new Vector2(),
@@ -39,10 +39,20 @@ namespace NeonDownfall.Classes
                 1 / 2.0
             );
             speeds[(int)PlayerState.StandRight] = 0;
+            animations[(int)PlayerState.StandLeft] = new Animation(
+                generateTextureArray(graphicsDevice, width, height, Color.Black, 2, 0, (byte)(0xFF / 2), 0, 0),
+                new Vector2[]
+                {
+                    new Vector2(),
+                    new Vector2()
+                },
+                1 / 2.0
+            );
+            speeds[(int)PlayerState.StandLeft] = 0;
 
             //right walk
             animations[(int)PlayerState.WalkRight] = new Animation(
-                generateTextureArray(graphicsDevice, width, height, Color.Black, width, (byte)(0xFF / width), 0, 0),
+                generateTextureArray(graphicsDevice, width, height, Color.Black, width, (byte)(0xFF / width), 0, 0, 15),
                 new Vector2[]
                 {
                     new Vector2(1, 0),
@@ -68,32 +78,32 @@ namespace NeonDownfall.Classes
             
             //right run
             animations[(int)PlayerState.RunRight] = new Animation(
-                generateTextureArray(graphicsDevice, width, height, Color.Black, width, 0, 0, (byte)(0xFF / width)),
+                generateTextureArray(graphicsDevice, width, height, Color.Black, width, 0, 0, (byte)(0xFF / width), 15),
                 new Vector2[]
                 {
-                    new Vector2(),
-                    new Vector2(),
-                    new Vector2(),
-                    new Vector2(),
-                    new Vector2(),
-                    new Vector2(),
-                    new Vector2(),
-                    new Vector2(),
-                    new Vector2(),
-                    new Vector2(),
-                    new Vector2(),
-                    new Vector2(),
-                    new Vector2(),
-                    new Vector2(),
-                    new Vector2(),
-                    new Vector2()
+                    new Vector2(2, 0),
+                    new Vector2(2, 0),
+                    new Vector2(2, 0),
+                    new Vector2(2, 0),
+                    new Vector2(2, 0),
+                    new Vector2(2, 0),
+                    new Vector2(2, 0),
+                    new Vector2(2, 0),
+                    new Vector2(2, 0),
+                    new Vector2(2, 0),
+                    new Vector2(2, 0),
+                    new Vector2(2, 0),
+                    new Vector2(2, 0),
+                    new Vector2(2, 0),
+                    new Vector2(2, 0),
+                    new Vector2(2, 0),
                 },
                 0.25 / ((float)width)
             );
             speeds[(int)PlayerState.RunRight] = 128;
         }
 
-        private Texture2D[] generateTextureArray(GraphicsDevice graphicsDevice, int width, int height, Color color, int number, byte rStep, byte gStep, byte bStep)
+        private Texture2D[] generateTextureArray(GraphicsDevice graphicsDevice, int width, int height, Color color, int number, byte rStep, byte gStep, byte bStep, int line)
         {
             Texture2D[] textures = new Texture2D[number];
 
@@ -102,15 +112,21 @@ namespace NeonDownfall.Classes
                 Texture2D texture = new Texture2D(graphicsDevice, width, height);
                 Color[] colors = new Color[width * height];
 
-                Color currentColor = new Color(
-                    color.R + (byte)(rStep * j),
-                    color.G + (byte)(gStep * j),
-                    color.B + (byte)(bStep * j),
-                    0xFF
-                );
                 for (int i = 0; i < colors.Length; i++)
                 {
+                    Color currentColor = new Color(
+                        color.R + (byte)(rStep * j),
+                        color.G + (byte)(gStep * j),
+                        color.B + (byte)(bStep * j),
+                        255
+                    );
+
+                    //TODO: add left/right gradient for facing
                     colors[i] = currentColor;
+                }
+                for (int k = line; k < colors.Length; k+=16)
+                {
+                    colors[k] = Color.Yellow;
                 }
                 texture.SetData(colors);
 
@@ -149,6 +165,11 @@ namespace NeonDownfall.Classes
                             currentState = PlayerState.WalkRight;
                             animations[(int)currentState].Reset();
                         }
+                    }
+                    else if (state.IsKeyDown(Keys.Left))
+                    {
+                        currentState = PlayerState.StandLeft;
+                        animations[(int)currentState].Reset();
                     }
 
                     break;
