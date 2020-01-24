@@ -49,7 +49,7 @@ namespace NeonDownfall.Classes
                         new Vector2(),
                         new Vector2()
                     },
-                    1 / 2.0
+                    0.5
                 )
             );
             animations[PlayerDirection.Left].Add(
@@ -61,7 +61,7 @@ namespace NeonDownfall.Classes
                         new Vector2(),
                         new Vector2()
                     },
-                    1 / 2.0
+                    0.5
                 )
             );
 
@@ -89,7 +89,7 @@ namespace NeonDownfall.Classes
                         new Vector2(0, 4),
                         new Vector2(0, 4),
                     },
-                    0.25 / 16.0
+                    1 / 32.0
                 )
             );
             animations[PlayerDirection.Left].Add(
@@ -115,7 +115,7 @@ namespace NeonDownfall.Classes
                         new Vector2(0, 2),
                         new Vector2(0, 2),
                     },
-                    0.25 / 16.0
+                    1 / 32.0
                 )
             );
 
@@ -173,7 +173,7 @@ namespace NeonDownfall.Classes
                         new Vector2(1, 0),
                         new Vector2(1, 0),
                     },
-                    0.25 / ((float)width)
+                    0.25 / 16f
                 )
             );
             animations[PlayerDirection.Left].Add(
@@ -199,7 +199,7 @@ namespace NeonDownfall.Classes
                         new Vector2(-1, 0),
                         new Vector2(-1, 0),
                     },
-                    0.25 / ((float)width)
+                    0.25 / 16f
                 )
             );
 
